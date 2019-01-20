@@ -1,0 +1,41 @@
+{
+	"name": "eq3-bluetooth-thermostat",
+	"version": "1.0.0",
+	"license": "MIT",
+	"main": "./dist/thermostat.js",
+	"module": "./src/thermostat.js",
+	"bin": {
+		"eq3-thermostat": "./bin/thermostat.js"
+	},
+	"scripts": {
+		"dev": "rollup -c -w",
+		"build": "rollup -c",
+		"prepublishOnly": "npm run build"
+	},
+	"files": [
+		"bin",
+		"dist",
+		"src"
+	],
+	"author": {
+		"name": "hinzundcode",
+		"email": "chris-git@appucino.de"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/hinzundcode/eq3-bluetooth-thermostat.git"
+	},
+	"keywords": [
+		"eq3",
+		"equiva",
+		"bluetooth",
+		"radiator",
+		"thermostat"
+	],
+	"peerDependencies": {
+		"webbluetooth-bluez": "^1.0.0"
+	},
+	"devDependencies": {
+		"rollup": "^1.1.0"
+	}
+}

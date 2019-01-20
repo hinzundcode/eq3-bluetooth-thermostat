@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<section>
+	<h2>Status</h2>
+	
+	<p>Connected: <code id="connection-status">false</code> <button id="connect-button">connect</button></p>
+	<p>Status: <pre><code id="thermostat-status">null</code></pre> <button id="get-status-button">get</button></p>
+</section>
+
+<section>
+	<h2>Commands</h2>
+	
+	<p>Set Target Temperature: <input type="number" id="target-temperature" step="0.5" value="20.0" /> <button id="set-target-temperature-button">set</button></p>
+	<p>Boost: <button id="enable-boost-button">enable</button> <button id="disable-boost-button">disable</button></p>
+</section>
+
+<script type="module">
+	import { serviceUuid, getStatus, setTargetTemperature, setBoost } from "../src/thermostat.js";
+	
+	const $ = document.getElementById.bind(document);
+	let device = null;
+	let status = null;
+	let inProgress = false;
+	
+	function render() {
+		$("connection-status").textContent = device !== null;
+		$("connection-status").disabled = inProgress;
+		
+		$("thermostat-status").textContent = JSON.stringify(status, null, "\t");
+		$("get-status-button").disabled = inProgress || device === null;
+		
+		$("set-target-temperature-button").disabled = inProgress;
+		$("enable-boost-button").disabled = inProgress || device === null;
+		$("disable-boost-button").disabled = inProgress || device === null;
+	}
+	
+	function wrapProgress(fn) {
+		return (...args) => {
+			if (inProgress) return;
+			
+			inProgress = true;
+			render();
+			
+			fn(...args).then(() => {
+				inProgress = false;
+				render();
+			}).catch(e => {
+				inProgress = false;
+				alert(e.message);
+				render();
+				throw e;
+			});
+		};
+	}
+	
+	$("connect-button").addEventListener("click", wrapProgress(async () => {
+		device = await navigator.bluetooth.requestDevice({
+			filters: [ { name: "CC-RT-BLE" } ],
+			optionalServices: [ serviceUuid ],
+		});
+	}));
+	
+	$("get-status-button").addEventListener("click", wrapProgress(async () => {
+		status = await getStatus(device);
+	}));
+	
+	$("set-target-temperature-button").addEventListener("click", wrapProgress(async () => {
+		let targetTemperature = parseFloat($("target-temperature").value);
+		
+		if (targetTemperature < 4.5 || targetTemperature > 30)
+			throw new Error("target temperature has to be between 4.5 and 30.0 in 0.5 steps");
+		
+		status = await setTargetTemperature(device, targetTemperature);
+	}));
+	
+	$("enable-boost-button").addEventListener("click", wrapProgress(async () => {
+		status = await setBoost(device, true);
+	}));
+	
+	$("disable-boost-button").addEventListener("click", wrapProgress(async () => {
+		status = await setBoost(device, false);
+	}));
+	
+	render();
+</script>
