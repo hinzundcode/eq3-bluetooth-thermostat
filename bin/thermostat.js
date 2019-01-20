@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 const { getStatus, setTargetTemperature, setBoost } = require("../dist/thermostat.js");
 const { getBluetoothDevice } = require("webbluetooth-bluez");
